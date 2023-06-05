@@ -1,10 +1,15 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/PrismaService';
 import { BookDTO } from './dto/create-book.dto';
+import { WorkerService } from 'src/worker/worker.service';
+//import { num } from '../../worker/my.worker';
 
 @Injectable()
 export class BookService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly workerService: WorkerService,
+  ) {}
 
   async create(data: BookDTO): Promise<BookDTO> {
     const bookExists: BookDTO = await this.prisma.book.findFirst({
@@ -37,12 +42,16 @@ export class BookService {
     return book;
   }
 
-  async findAll(): Promise<BookDTO[]> {
-    return this.prisma.book.findMany({
+  async findAll() {
+    const num = await this.workerService.getNum();
+
+    const books = await this.prisma.book.findMany({
       include: {
         author: true,
       },
     });
+
+    return { books, num };
   }
 
   async update(id: string, data: BookDTO) {
