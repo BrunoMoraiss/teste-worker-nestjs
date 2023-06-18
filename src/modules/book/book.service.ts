@@ -43,15 +43,13 @@ export class BookService {
   }
 
   async findAll() {
-    const num = await this.workerService.getNum();
-
     const books = await this.prisma.book.findMany({
       include: {
         author: true,
       },
     });
 
-    return { books, num };
+    return { books };
   }
 
   async update(id: string, data: BookDTO) {
